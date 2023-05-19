@@ -181,7 +181,7 @@ def do_dig(user):
         items = "Nothing.\n"
     if shovel and random.randint(1, 100) == 1:
             items += "But you broke your shovel !"
-            del_items("shovel", 1)
+            del_items(user, "shovel", 1)
     save_db()
     return f"""##### YOU DIGGED #####
 {items}"""
@@ -268,7 +268,7 @@ def do_dive(user):
         items = "Nothing.\n"
     if wetsuit and random.randint(1, 100) == 1:
             items += "But you broke your wetsuit !"
-            del_items("wetsuit", 1)
+            del_items(user, "wetsuit", 1)
     save_db()
     return f"""##### YOU FOUND #####
 {items}"""
