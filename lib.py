@@ -84,7 +84,7 @@ existing_items = ["gray fish", "worm", "box of sand", "golden tux",
 "potato seeds", "watermelon seeds", "corn seeds", "bone seeds",
 "carrot seeds", "brocoli seeds", "hoe", "potato", "watermelon", "corn", "bone",
 "carrot", "brocoli", "beer", "deed", "barrel", "hunting rifle", "rabbit",
-"dog", "cat", "mouse", "fox", "panda", "pet food", "water bucket", "pet bowl"]
+"dog", "cat", "mouse", "fox", "panda", "pet food", "water bucket", "pet toy", "pet bowl"]
 
 farm_out = {
     "potato seeds": "potato",
@@ -167,7 +167,8 @@ farmer_box_items = [
     "brocoli",
     "deed",
     "hunting rifle",
-    "pet bowl"
+    "pet bowl",
+    "pet toy"
 ]
 
 pets = [
@@ -254,7 +255,7 @@ def create_user(user):
     "golden fish": 2, "diamond fish": 1}
     json_data["users"][user]["probas"]["dig"] = {"worm": 30, "box of sand": 10,
     "golden tux": 1, "plastic tux": 6, "shovel": 2, "bank note": 4, "deed": 2,
-    "hoe": 4, "hunting rifle": 2}
+    "hoe": 4, "hunting rifle": 2, "pet toy": 2}
     json_data["users"][user]["probas"]["dive"] = {"seaweed": 30,
     "fishing pole": 10, "wetsuit": 5, "marble tux": 4, "golden treasure": 1,
     "barrel": 5, "water bucket": 5}
@@ -947,10 +948,9 @@ def do_craft_craft(user, item, num):
         return f"Item {item} do not exists !"
     if not item in craftings:
         return f"You cannot craft {item}."
-    for a in range(num):
-        for i, n in craftings[item]["recipe"].items():
-            if not has_item(user, i, n):
-                return f"You need to have {i} x{n} to craft one {item}."
+    for i, n in craftings[item]["recipe"].items():
+        if not has_item(user, i, n*num):
+            return f"You need to have {i} x{n*num} to craft {num} {item}."
     for a in range(num):
         for i, n in craftings[item]["recipe"].items():
             del_items(user, i, n)
@@ -990,7 +990,7 @@ def update_pet(user, pet):
     end = dt.datetime.now()
     time = (end - start).total_seconds()//60
     if time > 0:
-        for i in range(time):
+        for i in range(int(time)):
             if d["hunger"] > 0 and random.randint(0, d["sustainability"]) == 0:
                 d["hunger"] += random.randint(-1, 0)
                 d["love"] += random.randint(-1, 0)
@@ -1090,8 +1090,8 @@ def do_pets_adopt(user, pet, name, num):
             "attack": 0,
             "defence": 0,
         }
-        pet_reset_update_time(user, pet)
-        del_items(pet, 1)
+        pet_reset_update_time(user, str(id))
+        del_items(user, pet, 1)
         d = json_data["users"][user]["pets"][str(id)]
         out += f"""{d["type"].capitalize()} {d["name"].strip().capitalize()}
 Id : {i}
@@ -1132,7 +1132,7 @@ def do_pets_care(user, id, category, amount):
             catg += f"- \"{i}\"\n"
         return f"""{category} is not a valid category. Valid categories are :
 {catg}\n"""
-    update_pet(user, pet)
+    update_pet(user, id)
     save_db()
     pet_toy_broken = False
     if category in care_categories_itemneededonly:
@@ -1142,11 +1142,11 @@ def do_pets_care(user, id, category, amount):
             pet = json_data["users"][user]["pets"][id]
             for i in range(amount):
                 if pet[care_categories[category]] > 0:
-                    pet[care_categories[category]] -= random.randint(2, 8)
+                    pet[care_categories[category]] += random.randint(4, 8)
                     if pet[care_categories[category]] < 0: pet[care_categories[category]] = 0
-                    love += random.randint(3, 5)
-                    if love > 100: love = 100
-                    del_items(user, care_categories_itemneededonly[category], amount)
+                    pet["love"] += random.randint(3, 5)
+                    if pet["love"] > 100: pet["love"] = 100
+                    del_items(user, care_categories_itemneededonly[category], 1)
             json_data["users"][user]["pets"][id] = pet
     elif category == "fun":
         if not has_item(user, "pet toy", amount):
@@ -1199,7 +1199,7 @@ def do_pets_upgrade(user, id, category, amount):
             catg += f"- \"{i}\"\n"
         return f"""{category} is not a valid category. Valid categories are :
 {catg}\n"""
-    update_pet(user, pet)
+    update_pet(user, id)
     save_db()
     d = json_data["users"][user]["pets"][id]
     u = d["xp"]//(100+d["level"]*100)
