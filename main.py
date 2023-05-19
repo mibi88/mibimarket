@@ -25,6 +25,20 @@ async def chiptune(ctx: interactions.CommandContext):
 {random.choice(chiptune_links)}"""
     await ctx.send(f"```{out}```")
 
+@bot.command(
+    name="about",
+    description="About this bot.",
+    default_scope=False
+)
+
+async def about(ctx: interactions.CommandContext):
+    user = f"{ctx.user.id}"
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    out = about_this_bot(user)
+    await ctx.send(f"```{out}```")
+
 ##################### PROFILE #####################
 
 @bot.command(

@@ -4,6 +4,48 @@ import random
 
 json_data = {}
 
+VERSION = "v.0.1a1"
+
+ABOUT = f"""##### ABOUT MIBIMARKET #####
+
+Mibimaket {VERSION}
+(c) 2023 mibi88
+
+The commands that you can use :
+- /profile       : See your profile.
+- /fish          : Fish for some items. You need to have a fishing pole.
+- /dig           : Dig to get some items. With a shovel you have x2 more chances
+                   to get something. You have 1 chance of 100 to break your
+                   shovel.
+- /shop_sell     : Sell an item. Some items are not sellable in the shop, so you
+                   need to sell them in the market.
+- /shop_buy      : Buy an item from the shop.
+- /shop_view     : See which items are in the shop.
+- /dive          : Dive in the sea to find some items. With a wetsuit you have
+                   2x more chances to find items. You have 1 chance of 100 to
+                   break your wetsuit.
+- /deposit       : Deposit some coins on your bank account.
+- /withdraw      : Withdraw some coins from your bank account.
+- /use           : Use an item. If you use the following items, that's what it
+                   does :
+  - "bank note"  : You get more space on your bank account.
+- /rob           : Rob some coins from the wallet of someone.
+- /market_add    : Post an offer on the market. You can post an offer to sell
+                   something or for buying something. You need to pay something
+                   when you post an offer.
+- /market_remove : Remove an offer from the market.
+- /market_accept : Accept an offer from the market. By default you will accept
+                   the offer for only one item.
+- /market_view   : View what's in the market for one item. That's were tou get
+                   the id of an offer.
+- /economy_info  : See what's the price to post an offer on the market and the %
+                   of inflation.
+- /price         : Get the price of an item.
++ an easter egg HAHA !
+
+Contact me at <mbcontact50@gmail.com> if you find a bug.
+"""
+
 usable_items = ["bank note"]
 
 existing_items = ["gray fish", "worm", "box of sand", "golden tux",
@@ -140,6 +182,14 @@ def do_withdraw(user, num):
     json_data["users"][user]["bank"] -= num
     save_db()
     return f"You withdrew ${num} from your bank account."
+
+##################### BOT #####################
+
+def about_this_bot(user):
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    return ABOUT
 
 ##################### BASIC ACTIONS #####################
 
