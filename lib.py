@@ -33,7 +33,12 @@ The commands that you can use :
 - /use           : Use an item. If you use the following items, that's what it
                    does :
   - "bank note"  : You get more space on your bank account.
-- /rob           : Rob some coins from the wallet of someone.
+  - "deed"       : You have a bigger farm.
+  - "classic box": Open the box and see what you got !
+  - "farmer box" : Open the box and see what you got !
+- /rob           : Rob some coins from the wallet of someone. If you have some
+                   beer, you have 1/4 chance to drink beer and then you have
+                   2x less chances to be caught and you can get 2x more coins.
 - /market_add    : Post an offer on the market. You can post an offer to sell
                    something or for buying something. You need to pay something
                    when you post an offer.
@@ -44,13 +49,16 @@ The commands that you can use :
                    the id of an offer.
 - /economy_info  : See what's the price to post an offer on the market and the %
                    of inflation.
-- /price         : Get the price of an item.
+- /price         : Get the price of an item (and sometimes some extra infos).
+- /farm_plant    : Plant some seeds and let a this plant grow !
+- /farm_view     : See what's in your fields !
+- /farm_harvest  : Harvest your crops.
 + an easter egg HAHA !
 
 Contact me at <mbcontact50@gmail.com> if you find a bug.
 """
 
-usable_items = ["bank note"]
+usable_items = ["bank note", "deed", "farmer box", "classic box"]
 
 existing_items = ["gray fish", "worm", "box of sand", "golden tux",
 "plastic tux", "shovel", "fishing pole", "seaweed", "wetsuit", "marble tux",
@@ -58,7 +66,53 @@ existing_items = ["gray fish", "worm", "box of sand", "golden tux",
 "golden fish", "diamond fish", "bank note", "farmer box", "classic box",
 "potato seeds", "watermelon seeds", "corn seeds", "bone seeds",
 "carrot seeds", "brocoli seeds", "hoe", "potato", "watermelon", "corn", "bone",
-"carrot", "brocoli", "beer"]
+"carrot", "brocoli", "beer", "deed"]
+
+farm_out = {
+    "potato seeds": "potato",
+    "corn seeds": "corn",
+    "bone seeds": "bone",
+    "carrot seeds": "carrot",
+    "brocoli seeds": "brocoli",
+    "watermelon seeds": "watermelon"
+}
+
+farm_amount = {
+    "potato seeds": [1, 5],
+    "corn seeds": [2, 6],
+    "bone seeds": [2, 6],
+    "carrot seeds": [2, 12],
+    "brocoli seeds": [1, 3],
+    "watermelon seeds": [2, 3]
+}
+
+classic_box_items = [
+    "beer",
+    "shovel",
+    "wetsuit",
+    "fishing pole",
+    "bank note",
+    "deed",
+    "plastic tux"
+]
+
+farmer_box_items = [
+    "beer",
+    "hoe",
+    "potato seeds",
+    "corn seeds",
+    "bone seeds",
+    "carrot seeds",
+    "brocoli seeds",
+    "watermelon seeds",
+    "potato",
+    "watermelon",
+    "corn",
+    "bone",
+    "carrot",
+    "brocoli",
+    "deed"
+]
 
 DATABASE = "db.json"
 
@@ -91,11 +145,11 @@ else:
     "golden tux": 320, "plastic tux": 6, "shovel": 25, "fishing pole": 65,
     "wetsuit": 65, "marble tux": 220, "golden treasure": 860, "exotic fish": 25,
     "multicolor fish": 45, "luminescent fish": 140, "golden fish": 280,
-    "diamond fish": 1120, "bank note": 65, "farmer box": 115, "classic box": 85,
+    "diamond fish": 1120, "bank note": 65, "farmer box": 1620, "classic box": 1270,
     "potato seeds": 5, "watermelon seeds": 30, "corn seeds": 10, "bone seeds": 15,
     "carrot seeds": 20, "brocoli seeds": 25, "hoe": 30, "potato": 10,
     "watermelon": 35, "corn": 15, "bone": 20, "carrot": 25, "brocoli": 30,
-    "beer": 40}
+    "beer": 40, "deed": 85}
     json_data["non_sellable_prices"] = {"worm": 1, "seaweed": 3}
     json_data["inflation"] = 0
     json_data["scratch_update"] = 255
@@ -115,10 +169,16 @@ def create_user(user):
     "exotic fish": 10, "multicolor fish": 5, "luminescent fish": 3,
     "golden fish": 2, "diamond fish": 1}
     json_data["users"][user]["probas"]["dig"] = {"worm": 30, "box of sand": 10,
-    "golden tux": 1, "plastic tux": 6, "shovel": 2, "bank note": 4}
+    "golden tux": 1, "plastic tux": 6, "shovel": 2, "bank note": 4, "deed": 2,
+    "hoe": 4}
     json_data["users"][user]["probas"]["dive"] = {"seaweed": 30,
     "fishing pole": 10, "wetsuit": 5, "marble tux": 4, "golden treasure": 1}
     json_data["users"][user]["lastscratch"] = 255
+    json_data["users"][user]["farm_size"] = 9
+    json_data["users"][user]["farm_items"] = []
+    json_data["users"][user]["growing_speed"] = {"watermelon seeds": 30,
+    "brocoli seeds": 25, "carrot seeds": 20, "bone seeds": 15, "corn seeds": 10,
+    "potato seeds": 5}
 
 def get_profile(user):
     if not user in json_data["users"]:
@@ -349,9 +409,22 @@ def do_use(user, item, num):
     if not item in usable_items:
         return f"You cannot use {item}"
     used = 1
+    message = ""
     for i in range(num):
         if item == "bank note":
             json_data["users"][user]["bank_max"] += random.randint(20000, 40000)
+        if item == "deed":
+            json_data["users"][user]["farm_size"] += random.randint(5, 9)
+        if item == "classic box" or item == "farmer box":
+            items_got = []
+            message = "You got :\n"
+            for i in range(5):
+                if item == "farmer box": items_got.append(random.choice(farmer_box_items))
+                else: items_got.append(random.choice(classic_box_items))
+            for i in items_got:
+                amount = random.randint(1, 3)
+                add_items(user, i, amount)
+                message += f" - {i} x{amount}\n"
         else:
             used = 0
     if used == 0:
@@ -361,7 +434,7 @@ def do_use(user, item, num):
     else:
         del_items(user, item, num)
     save_db()
-    return f"You used {num}x {item}"
+    return f"You used {num}x {item}\n{message}"
 
 def do_rob(user, dest):
     if not user in json_data["users"]:
@@ -374,11 +447,18 @@ def do_rob(user, dest):
         return f"You need to have at least $100."
     if not has_money(dest, 100):
         return f"User {dest} has less than $100."
-    amount = random.randint(1, 100)
-    if random.randint(1, 20) == 0:
-        pay(user, 100)
+    message = ""
+    div = 1
+    if has_item(user, "beer", 1) and random.randint(1, 4) == 1:
+        message = "You drunk some beer before.\n"
+        del_items(user, "beer", 1)
+        div = 2
+    amount = random.randint(1, 100*div)
+    if random.randint(1, 20//div) == 0:
+        pay(user, 100//div)
         save_db()
-        return f"You where caught and paid $100"
+        if div == 2: return f"You where caught and paid $50"
+        else: return f"You where caught and paid $100"
     else:
         pay(dest, amount)
         get_money(user, amount)
@@ -434,6 +514,8 @@ def do_market_add(user, type, item, amount, for_item, for_amount):
     type = type.lower().strip()
     item = item.lower().strip()
     for_item = for_item.lower().strip()
+    if for_amount < 1 or amount < 1:
+        return "You cannot post an offer for less than 1 item."
     if for_item != "coins" and amount != for_amount:
         return """If you post for coins,
 amount and for_amount need to be the same."""
@@ -623,7 +705,113 @@ def view_price(user, item):
     else:
         return f"Ow, I could not find the price of {item}. Please report it to the developpers."
     price_inflation = int(price_normal+price_normal/100*json_data["inflation"])
+    specific_infos = ""
+    if item in json_data["users"][user]["growing_speed"]:
+        speed = json_data["users"][user]["growing_speed"][item]
+        specific_infos += "This item takes ~{speed}min to grow when he is planted."
     return f"""##### PRICES #####
 Item {item} costs ${price_normal} with 0% Inflation.
    > {item} costs ${price_inflation} with {json_data["inflation"]}% inflation.
+"""
+
+##################### FARMING #####################
+
+def get_growing_speed(user, data):
+    time = data["time"].split("-")
+    for i, n in enumerate(time): time[i] = int(n)
+    start = dt.datetime(time[0], time[1], time[2], time[3], time[4])
+    end = dt.datetime.now()
+    return (end - start).total_seconds()//60
+
+def update_farm_state(user):
+    for i, data in enumerate(json_data["users"][user]["farm_items"]):
+        item = data["item"]
+        if not data["stat"]:
+            min = get_growing_speed(user, data)
+            if min >= data["growing_speed"]:
+                json_data["users"][user]["farm_items"][i]["stat"] = 1
+
+def do_farm_see(user):
+    if not user in json_data["users"]:
+        create_user(user)
+    items = ""
+    update_farm_state(user)
+    for i, data in enumerate(json_data["users"][user]["farm_items"]):
+        item = data["item"]
+        if data["stat"]:
+            stat = "Ready to harvest"
+        else:
+            stat = "Growing ..."
+        time = int(json_data["users"][user]["growing_speed"][item]-(get_growing_speed(user, data)//5*5))
+        if time < 0: time = 0
+        items += f" - {item} : {stat}\n"
+        if not data["stat"]: items += "   It will take ~{time}min to grow.\n"
+    if items == "":
+        items = "Nothing."
+    save_db()
+    return f"""##### FARM #####
+The content of your fields :
+{items}
+"""
+
+def do_farm_plant(user, item, num):
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    item = item.lower().strip()
+    if not item in existing_items:
+        return f"Item {item} do not exists."
+    if not item in json_data["users"][user]["growing_speed"]:
+        return f"You cannot plant {item}."
+    if not has_item(user, "hoe", 1):
+        return f"You do not have a hoe."
+    if not has_item(user, item, num):
+        return f"You do not have {num} {item}."
+    if len(json_data["users"][user]["farm_items"])+num > json_data["users"][user]["farm_size"]:
+        return """You need a bigger farm to plant so many seeds.
+Try to get a deed and use it, so you will get more fields."""
+    out = ""
+    for i in range(num):
+        time = dt.datetime.now()
+        timestr = f"{time.year}-{time.month}-{time.day}-{time.hour}-{time.minute}"
+        growspeed = json_data["users"][user]["growing_speed"][item]+random.randint(-5, 5)
+        data = {"item": item, "stat": 0, "time": timestr,
+        "growing_speed": growspeed}
+        json_data["users"][user]["farm_items"].append(data)
+        del_items(user, item, 1)
+        out += f""" - {item} x{num}
+   It will take ~{json_data["users"][user]["growing_speed"][item]}min to grow."""
+    if random.randint(1, 100) == 1:
+        out += "But you broke your hoe !"
+        del_items(user, "hoe", 1)
+    save_db()
+    return f"""##### FARM #####
+You planted :
+{out}
+"""
+
+def do_farm_harvest(user):
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    update_farm_state(user)
+    to_del = []
+    out = ""
+    for i, data in enumerate(json_data["users"][user]["farm_items"]):
+        if data["stat"]:
+            item = data["item"]
+            real_item = farm_out[item]
+            amount_range = farm_amount[item]
+            amount = random.randint(amount_range[0], amount_range[1])
+            seeds_amount = random.randint(1, 4)
+            out += f" - {real_item} x{amount} and {item} x{seeds_amount}"
+            add_items(user, real_item, amount)
+            add_items(user, item, seeds_amount)
+            to_del.append(i)
+    for i in to_del:
+        del json_data["users"][user]["farm_items"][i]
+    if out == "": out = "Nothing."
+    return f"""##### FARM #####
+You harvested :
+{out}
 """

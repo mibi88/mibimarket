@@ -9,7 +9,8 @@ chiptune_links = [
     "https://www.youtube.com/watch?v=Hj3W6nthrKU",
     "https://www.youtube.com/watch?v=GLMhBE99byM",
     "https://www.youtube.com/watch?v=LUJNH_36GjQ",
-    "https://www.youtube.com/watch?v=ByKCPbScgsU"
+    "https://www.youtube.com/watch?v=ByKCPbScgsU",
+    "https://www.youtube.com/watch?v=qrtt7mgwCTw"
 ]
 
 @bot.command(
@@ -214,7 +215,7 @@ async def withdraw(ctx: interactions.CommandContext, num: int):
     options = [
         interactions.Option(
             name="item",
-            description="Which item du you want to use.",
+            description="Which item do you want to use.",
             type=interactions.OptionType.STRING,
             required=True,
         ),
@@ -392,6 +393,55 @@ async def economy_info(ctx: interactions.CommandContext):
 async def price(ctx: interactions.CommandContext, item: str):
     user = f"{ctx.user.id}"
     out = view_price(user, item)
+    await ctx.send(f"```{out}```")
+
+##################### FARMING #####################
+
+@bot.command(
+    name="farm_plant",
+    description="Plant some seeds.",
+    options = [
+        interactions.Option(
+            name="item",
+            description="Which item do you want to plant.",
+            type=interactions.OptionType.STRING,
+            required=True,
+        ),
+        interactions.Option(
+            name="num",
+            description="How many items do you want to plant.",
+            type=interactions.OptionType.INTEGER,
+            required=False,
+        )
+    ],
+    default_scope=False
+)
+
+async def farm_plant(ctx: interactions.CommandContext, item: str, num: int = 1):
+    user = f"{ctx.user.id}"
+    out = do_farm_plant(user, item, num)
+    await ctx.send(f"```{out}```")
+
+@bot.command(
+    name="farm_harvest",
+    description="Harvest your crops.",
+    default_scope=False
+)
+
+async def farm_harvest(ctx: interactions.CommandContext):
+    user = f"{ctx.user.id}"
+    out = do_farm_harvest(user)
+    await ctx.send(f"```{out}```")
+
+@bot.command(
+    name="farm_view",
+    description="View what's growing in your farm.",
+    default_scope=False
+)
+
+async def farm_view(ctx: interactions.CommandContext):
+    user = f"{ctx.user.id}"
+    out = do_farm_see(user)
     await ctx.send(f"```{out}```")
 
 bot.start()
