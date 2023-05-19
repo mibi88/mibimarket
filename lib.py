@@ -39,6 +39,7 @@ The commands that you can use :
 - /rob           : Rob some coins from the wallet of someone. If you have some
                    beer, you have 1/4 chance to drink beer and then you have
                    2x less chances to be caught and you can get 2x more coins.
+                   You will also pay only $50 if you where caught.
 - /market_add    : Post an offer on the market. You can post an offer to sell
                    something or for buying something. You need to pay something
                    when you post an offer.
