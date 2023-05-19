@@ -1094,7 +1094,7 @@ def do_pets_adopt(user, pet, name, num):
         del_items(user, pet, 1)
         d = json_data["users"][user]["pets"][str(id)]
         out += f"""{d["type"].capitalize()} {d["name"].strip().capitalize()}
-Id : {i}
+Id : {id}
 - Hunger :         {getpbar(10, d["hunger"], 100)} {d["hunger"]}%.
 - Hygiene :        {getpbar(10, d["hygiene"], 100)} {d["hygiene"]}%.
 - Fun :            {getpbar(10, d["fun"], 100)} {d["fun"]}%.
@@ -1164,7 +1164,7 @@ def do_pets_care(user, id, category, amount):
     out = f"""##### PETS #####
 Pet profile :
 {d["type"].capitalize()} {d["name"].strip().capitalize()}
-Id : {i}
+Id : {id}
 - Hunger :         {getpbar(10, d["hunger"], 100)} {d["hunger"]}%.
 - Hygiene :        {getpbar(10, d["hygiene"], 100)} {d["hygiene"]}%.
 - Fun :            {getpbar(10, d["fun"], 100)} {d["fun"]}%.
@@ -1203,19 +1203,22 @@ def do_pets_upgrade(user, id, category, amount):
     save_db()
     d = json_data["users"][user]["pets"][id]
     u = d["xp"]//(100+d["level"]*100)
+    if u < 0: u = 0
     if amount > u:
         return f"You can only do {u} upgrades to your pet."
-    if d["xp"] - (100+d["level"]*100)*amount < 0:
+    n = d["xp"] - (100+d["level"]*100)*amount
+    if n < 0:
         return """Oh there was a weird bug in pets_upgrade, report it to the
 developer please."""
     d["level"] += u
-    d["xp"] -= (100+d["level"]*100)*amount
+    d["xp"] = n
+    d[category] += 1
     json_data["users"][user]["pets"][id] = d
     save_db()
     return f"""##### PETS #####
 Upgraded pet profile :
 {d["type"].capitalize()} {d["name"].strip().capitalize()}
-Id : {i}
+Id : {id}
 - Hunger :         {getpbar(10, d["hunger"], 100)} {d["hunger"]}%.
 - Hygiene :        {getpbar(10, d["hygiene"], 100)} {d["hygiene"]}%.
 - Fun :            {getpbar(10, d["fun"], 100)} {d["fun"]}%.

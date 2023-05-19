@@ -1,8 +1,9 @@
 import interactions
 from lib import *
 from math import *
+from bot_token import *
 
-bot = interactions.Client(token="token")
+bot = interactions.Client(token=BOT_TOKEN)
 
 calls = {}
 
