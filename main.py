@@ -6,7 +6,8 @@ bot = interactions.Client(token="token")
 calls = {}
 
 chiptune_links = [
-    "https://www.youtube.com/watch?v=Hj3W6nthrKU"
+    "https://www.youtube.com/watch?v=Hj3W6nthrKU",
+    "https://www.youtube.com/watch?v=GLMhBE99byM"
 ]
 
 @bot.command(
@@ -20,7 +21,7 @@ async def chiptune(ctx: interactions.CommandContext):
     if not user in json_data["users"]:
         create_user(user)
         save_db()
-    out = f"""Some chiptune :
+    out = f"""Some chiptune (or sometimes 16-bit music) :
 {random.choice(chiptune_links)}"""
     await ctx.send(f"```{out}```")
 
@@ -310,7 +311,7 @@ async def market_remove(ctx: interactions.CommandContext, id: int):
     default_scope=False
 )
 
-async def market_accept(ctx: interactions.CommandContext, id: int, amount: int = None):
+async def market_accept(ctx: interactions.CommandContext, id: int, amount: int = 1):
     user = f"{ctx.user.id}"
     out = do_market_accept(user, id, amount)
     await ctx.send(f"```{out}```")
@@ -345,6 +346,25 @@ async def market_view(ctx: interactions.CommandContext, item: str):
 async def economy_info(ctx: interactions.CommandContext):
     user = f"{ctx.user.id}"
     out = view_stat(user)
+    await ctx.send(f"```{out}```")
+
+@bot.command(
+    name="price",
+    description="Get the price of an item.",
+    options = [
+        interactions.Option(
+            name="item",
+            description="The item that you want to buy/sell.",
+            type=interactions.OptionType.STRING,
+            required=True
+        )
+    ],
+    default_scope=False
+)
+
+async def price(ctx: interactions.CommandContext, item: str):
+    user = f"{ctx.user.id}"
+    out = view_price(user, item)
     await ctx.send(f"```{out}```")
 
 bot.start()

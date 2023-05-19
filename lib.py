@@ -411,13 +411,15 @@ def do_market_accept(user, id, amount):
     dest = json_data["market"][id]["user"]
     if user == dest:
         return "You cannot accept your own offer."
-    if amount == None: amount = 1
     if json_data["market"][id]["type"] == "sell":
+        if not has_item(dest, json_data["market"][id]["item"], amount):
+            item = json_data["market"][id]["item"]
+            return f"User {dest} has not {item} x{amount} anymore."
         if amount > json_data["market"][id]["amount"]:
             return "You cannot buy so much at this offer."
         if json_data["market"][id]["for_item"] == "coins":
             if not has_money(user, amount):
-                for_amount = json_data["market"][id]["for_amount"]
+                for_amount = json_data["market"][id]["for_amount"]/json_data["market"][id]["amount"]*amount
                 return f"You do not have ${for_amount} !"
             add_items(user, json_data["market"][id]["item"], amount)
             del_items(dest, json_data["market"][id]["item"], amount)
@@ -434,9 +436,11 @@ def do_market_accept(user, id, amount):
             add_items(dest, json_data["market"][id]["for_item"], amount)
             del_items(user, json_data["market"][id]["for_item"], amount)
     elif json_data["market"][id]["type"] == "buy":
-        dest = json_data["market"][id]["user"]
         if amount > json_data["market"][id]["for_amount"]:
             return "You cannot sell so much at this offer."
+        if not has_item(dest, json_data["market"][id]["for_item"], amount):
+            item = json_data["market"][id]["for_item"]
+            return f"User {dest} has not {item} x{amount} anymore."
         if json_data["market"][id]["for_item"] == "coins":
             if not has_money(dest, amount):
                 coins = json_data["market"][id]["for_amount"]
@@ -448,8 +452,8 @@ def do_market_accept(user, id, amount):
             pay(dest, price)
         else:
             if not has_item(user, json_data["market"][id]["item"], amount):
-                for_item = json_data["market"][id]["for_item"]
-                return f"You do not have {amount} {for_item} !"
+                item = json_data["market"][id]["item"]
+                return f"You do not have {amount} {item} !"
             del_items(user, json_data["market"][id]["item"], amount)
             add_items(dest, json_data["market"][id]["item"], amount)
             del_items(dest, json_data["market"][id]["for_item"], amount)
@@ -465,7 +469,9 @@ You got :
         text = f"""You accepted offer {id}
 You got :
 {json_data["market"][id]["item"]} x{amount}"""
-    del json_data["market"][id]
+    json_data["market"][id]["amount"] -= amount
+    if json_data["market"][id]["amount"] <= 0:
+        del json_data["market"][id]
     update_marketprice()
     save_db()
     return text
@@ -503,4 +509,23 @@ def view_stat(user):
 Inflation : {json_data["inflation"]}%
 Offer price in the market : {json_data["marketprice"]}%
 of the income of the offer.
+"""
+
+def view_price(user, item):
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    item = item.lower().strip()
+    if not item in existing_items:
+        return f"Item {item} does not exists."
+    if item in json_data["prices"]:
+        price_normal = json_data["prices"][item]
+    elif item in json_data["non_sellable_prices"]:
+        price_normal = json_data["non_sellable_prices"][item]
+    else:
+        return f"Ow, I could not find the price of {item}. Please report it to the developpers."
+    price_inflation = int(price_normal+price_normal/100*json_data["inflation"])
+    return f"""##### PRICES #####
+Item {item} costs ${price_normal} with 0% Inflation.
+   > {item} costs ${price_inflation} with {json_data["inflation"]}% inflation.
 """
