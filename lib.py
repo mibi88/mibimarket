@@ -372,7 +372,7 @@ sell : You want to sell something"""
             price = 1
         if not has_money(user, price):
             return f"You need ${price} to post this offer !"
-        pay(user, price)
+    pay(user, price)
     id = 0
     while str(id) in json_data["market"]: id += 1
     json_data["market"][str(id)] = {"user": user, "type": type, "item": item,
