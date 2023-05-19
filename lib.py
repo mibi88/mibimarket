@@ -2,10 +2,11 @@ import json
 import os
 import random
 import datetime as dt
+from pbar import *
 
 json_data = {}
 
-VERSION = "v.0.1a3"
+VERSION = "v.0.1a4"
 
 ABOUT = f"""##### ABOUT MIBIMARKET #####
 
@@ -39,6 +40,7 @@ The commands that you can use :
   - "deed"       : You have a bigger farm.
   - "classic box": Open the box and see what you got !
   - "farmer box" : Open the box and see what you got !
+  - "pet bowl"   : Get one more pet slot !
 - /rob           : Rob some coins from the wallet of someone. If you have some
                    beer, you can drink beer and then you have 2x more chances to
                    be caught but you can get 2x more coins. You will also pay
@@ -57,12 +59,23 @@ The commands that you can use :
 - /farm_plant    : Plant some seeds and let a this plant grow !
 - /farm_view     : See what's in your fields !
 - /farm_harvest  : Harvest your crops.
+- /pets_view     : See the pets you have.
+- /pets_adopt    : Adopt a pet.
+- /pets_care     : Take care of one of your pets. This will improve their XP
+                   Categories are :
+  - "food"       : He will get less hungry. Needs pet food.
+  - "hygiene"    : Wash your pet. This will improve his hygiene. Requires a
+                   water bucket.
+  - "fun"        : Play with your pet to make him happy. Requires a pet toy.
+- /pets_upgrade  : Upgrade your pet, this is useful to improve his
+                   sustainability, make him better at hunting, in attack in
+                   petfights or in defence. This requires a high XP.
 + an easter egg HAHA !
 
 Contact me at <mbcontact50@gmail.com> if you find a bug.
 """
 
-usable_items = ["bank note", "deed", "farmer box", "classic box"]
+usable_items = ["bank note", "deed", "farmer box", "classic box", "pet bowl"]
 
 existing_items = ["gray fish", "worm", "box of sand", "golden tux",
 "plastic tux", "shovel", "fishing pole", "seaweed", "wetsuit", "marble tux",
@@ -71,7 +84,7 @@ existing_items = ["gray fish", "worm", "box of sand", "golden tux",
 "potato seeds", "watermelon seeds", "corn seeds", "bone seeds",
 "carrot seeds", "brocoli seeds", "hoe", "potato", "watermelon", "corn", "bone",
 "carrot", "brocoli", "beer", "deed", "barrel", "hunting rifle", "rabbit",
-"dog", "cat", "mouse", "fox", "panda"]
+"dog", "cat", "mouse", "fox", "panda", "pet food", "water bucket", "pet bowl"]
 
 farm_out = {
     "potato seeds": "potato",
@@ -119,6 +132,10 @@ craftings = {
     "beer": {
         "recipe": {"corn": 5, "barrel": 1},
         "amount": 5
+    },
+    "pet food": {
+        "recipe": {"carrot": 3, "corn": 2, "bone": 1},
+        "amount": 2
     }
 }
 
@@ -149,8 +166,36 @@ farmer_box_items = [
     "carrot",
     "brocoli",
     "deed",
-    "hunting rifle"
+    "hunting rifle",
+    "pet bowl"
 ]
+
+pets = [
+    "rabbit",
+    "dog",
+    "cat",
+    "mouse",
+    "fox",
+    "panda"
+]
+
+care_categories = {
+    "food": "hunger",
+    "hygiene": "hygiene",
+    "fun": "fun"
+}
+
+upgrade_categories = [
+    "sustainability",
+    "hunt",
+    "attack",
+    "defence"
+]
+
+care_categories_itemneededonly = {
+    "food": "pet food",
+    "hygiene": "water bucket"
+}
 
 DATABASE = "db.json"
 
@@ -212,7 +257,7 @@ def create_user(user):
     "hoe": 4, "hunting rifle": 2}
     json_data["users"][user]["probas"]["dive"] = {"seaweed": 30,
     "fishing pole": 10, "wetsuit": 5, "marble tux": 4, "golden treasure": 1,
-    "barrel": 5}
+    "barrel": 5, "water bucket": 5}
     json_data["users"][user]["probas"]["hunt"] = {"rabbit": 40, "dog": 10, "cat": 5,
     "mouse": 5, "fox": 5, "panda": 5}
     json_data["users"][user]["lastscratch"] = 255
@@ -221,6 +266,8 @@ def create_user(user):
     json_data["users"][user]["growing_speed"] = {"watermelon seeds": 30,
     "brocoli seeds": 25, "carrot seeds": 20, "bone seeds": 15, "corn seeds": 10,
     "potato seeds": 5}
+    json_data["users"][user]["pets"] = {}
+    json_data["users"][user]["pets_max_num"] = {}
 
 def get_profile(user):
     if not user in json_data["users"]:
@@ -489,6 +536,8 @@ def do_use(user, item, num):
                 amount = random.randint(1, 3)
                 add_items(user, i, amount)
                 message += f" - {i} x{amount}\n"
+        elif item == "pet bowl":
+            json_data["users"][user]["pets_max_num"] += 1
         else:
             used = 0
     if used == 0:
@@ -926,3 +975,262 @@ def do_craft_see(user):
 """
 
 ##################### PETS #####################
+
+def pet_reset_update_time(user, pet):
+    time = dt.datetime.now()
+    timestr = f"{time.year}-{time.month}-{time.day}-{time.hour}-{time.minute}"
+    json_data["users"][user]["pets"][pet]["update"] = timestr
+
+def update_pet(user, pet):
+    d = json_data["users"][user]["pets"][pet]
+    time = []
+    for v in d["update"].split('-'):
+        time.append(int(v))
+    start = dt.datetime(time[0], time[1], time[2], time[3], time[4])
+    end = dt.datetime.now()
+    time = (end - start).total_seconds()//60
+    if time > 0:
+        for i in range(time):
+            if d["hunger"] > 0 and random.randint(0, d["sustainability"]) == 0:
+                d["hunger"] += random.randint(-1, 0)
+                d["love"] += random.randint(-1, 0)
+                if d["love"] < 0: d["love"] = 0
+            if d["hygiene"] > 0 and random.randint(0, d["sustainability"]) == 0:
+                d["hygiene"] += random.randint(-1, 0)
+                d["love"] += random.randint(-1, 0)
+                if d["love"] < 0: d["love"] = 0
+            if d["fun"] > 0 and random.randint(0, d["sustainability"]) == 0:
+                d["fun"] += random.randint(-1, 0)
+                d["love"] += random.randint(-1, 0)
+                if d["love"] < 0: d["love"] = 0
+            # Add
+            if d["hunger"] < 100 and random.randint(0, 100-d["sustainability"]) == 0:
+                d["hunger"] += random.randint(0, 1)
+                d["love"] += random.randint(-1, 1)
+                if d["love"] < 0: d["love"] = 0
+                if d["love"] > 100: d["love"] = 100
+            if d["hygiene"] < 100 and random.randint(0, 100-d["sustainability"]) == 0:
+                d["hygiene"] += random.randint(0, 1)
+                d["love"] += random.randint(-1, 1)
+                if d["love"] < 0: d["love"] = 0
+                if d["love"] > 100: d["love"] = 100
+            if d["fun"] < 100 and random.randint(0, 100-d["sustainability"]) == 0:
+                d["fun"] += random.randint(0, 1)
+                d["love"] += random.randint(-1, 1)
+                if d["love"] < 0: d["love"] = 0
+                if d["love"] > 100: d["love"] = 100
+            if random.randint(0, 100) == 0: d["xp"] += 1
+    json_data["users"][user]["pets"][pet] = d
+    pet_reset_update_time(user, pet)
+
+def do_pets_see(user):
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    out = ""
+    pets = json_data["users"][user]["pets"]
+    slots = json_data["users"][user]["pets_max_num"]
+    usedslots = len(json_data["users"][user]["pets"])
+    for i, d in pets.items():
+        update_pet(user, i)
+        out += f"""{d["type"].capitalize()} {d["name"].strip().capitalize()}
+Id : {i}
+- Hunger :         {getpbar(10, d["hunger"], 100)} {d["hunger"]}%.
+- Hygiene :        {getpbar(10, d["hygiene"], 100)} {d["hygiene"]}%.
+- Fun :            {getpbar(10, d["fun"], 100)} {d["fun"]}%.
+- Love :           {getpbar(10, d["love"], 100)} {d["love"]}%.
+------------------------------------------------------
+- Level :          {d["level"]}.
+- XP :             {d["xp"]}.
+------------------------------------------------------
+- sustainability : {d["sustainability"]}.
+- hunt :           {d["hunt"]}.
+- attack :         {d["attack"]}.
+- defence :        {d["defence"]}.
+------------------------------------------------------
+|
+---> You can upgrade sustainability, hunt, attack or
+     defence by {d["xp"]//(100+d["level"]*100)} with
+     /pets_upgrade
+"""
+    save_db()
+    return f"""##### PETS #####
+You used {len(json_data["users"][user]["pets"])}/{json_data["users"][user]["pets_max_num"]} slots.
+Pets of user {user} :
+{out}"""
+
+def do_pets_adopt(user, pet, name, num):
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    pet = pet.lower().strip()
+    if not pet in pets:
+        return f"{pet} is not a valid pet item."
+    if not has_item(user, pet, num):
+        return f"You do not have {pet} {num} in your inventory."
+    slots = json_data["users"][user]["pets_max_num"]
+    usedslots = len(json_data["users"][user]["pets"])
+    if usedslots + num > slots:
+        return f"You only have {slots} (and you already used {usedslots})"
+    out = ""
+    for i in range(num):
+        id = 0
+        while str(id) in json_data["users"][user]["pets"]: id+=1
+        json_data["users"][user]["pets"][str(id)] = {
+            "hunger": random.randint(30, 100),
+            "hygiene": random.randint(30, 100),
+            "fun": random.randint(30, 100),
+            "love": random.randint(30, 100),
+            "type": pet,
+            "name": name,
+            "xp": 0,
+            "level": 0,
+            "sustainability": 1,
+            "hunt": 0,
+            "attack": 0,
+            "defence": 0,
+        }
+        pet_reset_update_time(user, pet)
+        del_items(pet, 1)
+        d = json_data["users"][user]["pets"][str(id)]
+        out += f"""{d["type"].capitalize()} {d["name"].strip().capitalize()}
+Id : {i}
+- Hunger :         {getpbar(10, d["hunger"], 100)} {d["hunger"]}%.
+- Hygiene :        {getpbar(10, d["hygiene"], 100)} {d["hygiene"]}%.
+- Fun :            {getpbar(10, d["fun"], 100)} {d["fun"]}%.
+- Love :           {getpbar(10, d["love"], 100)} {d["love"]}%.
+------------------------------------------------------
+- Level :          {d["level"]}.
+- XP :             {d["xp"]}.
+------------------------------------------------------
+- sustainability : {d["sustainability"]}.
+- hunt :           {d["hunt"]}.
+- attack :         {d["attack"]}.
+- defence :        {d["defence"]}.
+------------------------------------------------------
+|
+---> You can upgrade sustainability, hunt, attack or
+     defence by {d["xp"]//(100+d["level"]*100)} with
+     /pets_upgrade
+"""
+    save_db()
+    return f"""##### PETS #####
+New pet(s) of user {user} :
+{out}
+"""
+
+def do_pets_care(user, id, category, amount):
+    id = str(id)
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    if not id in json_data["users"][user]["pets"]:
+        return f"You have no pet with id {id}"
+    if not category in care_categories:
+        catg = ""
+        for i in care_categories:
+            catg += f"- \"{i}\"\n"
+        return f"""{category} is not a valid category. Valid categories are :
+{catg}\n"""
+    update_pet(user, pet)
+    save_db()
+    pet_toy_broken = False
+    if category in care_categories_itemneededonly:
+        if not has_item(user, care_categories_itemneededonly[category], amount):
+            return f"Get {amount}x {care_categories_itemneededonly[category]} before :)"
+        else:
+            pet = json_data["users"][user]["pets"][id]
+            for i in range(amount):
+                if pet[care_categories[category]] > 0:
+                    pet[care_categories[category]] -= random.randint(2, 8)
+                    if pet[care_categories[category]] < 0: pet[care_categories[category]] = 0
+                    love += random.randint(3, 5)
+                    if love > 100: love = 100
+                    del_items(user, care_categories_itemneededonly[category], amount)
+            json_data["users"][user]["pets"][id] = pet
+    elif category == "fun":
+        if not has_item(user, "pet toy", amount):
+            return f"Get {amount}x pet toy before :)"
+        elif json_data["users"][user]["pets"][id]["fun"] < 100:
+            json_data["users"][user]["pets"][id]["fun"] += random.randint(2, 8)
+            if random.randint(0, 50//amount) == 0:
+                pet_toy_broken = True
+                del_items(user, "pet toy", 1)
+    m = json_data["users"][user]["pets"][id]["sustainability"]
+    if m < 1: m = 1
+    json_data["users"][user]["pets"][id]["xp"] += random.randint(4, 16*m)
+    save_db()
+    d = json_data["users"][user]["pets"][id]
+    out = f"""##### PETS #####
+Pet profile :
+{d["type"].capitalize()} {d["name"].strip().capitalize()}
+Id : {i}
+- Hunger :         {getpbar(10, d["hunger"], 100)} {d["hunger"]}%.
+- Hygiene :        {getpbar(10, d["hygiene"], 100)} {d["hygiene"]}%.
+- Fun :            {getpbar(10, d["fun"], 100)} {d["fun"]}%.
+- Love :           {getpbar(10, d["love"], 100)} {d["love"]}%.
+------------------------------------------------------
+- Level :          {d["level"]}.
+- XP :             {d["xp"]}.
+------------------------------------------------------
+- sustainability : {d["sustainability"]}.
+- hunt :           {d["hunt"]}.
+- attack :         {d["attack"]}.
+- defence :        {d["defence"]}.
+------------------------------------------------------
+|
+---> You can upgrade sustainability, hunt, attack or
+     defence by {d["xp"]//(100+d["level"]*100)} with
+     /pets_upgrade
+"""
+    if pet_toy_broken: out += "But you broke 1x pet toy\n"
+    return out
+
+def do_pets_upgrade(user, id, category, amount):
+    id = str(id)
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    if not id in json_data["users"][user]["pets"]:
+        return f"You have no pet with id {id}"
+    if not category in upgrade_categories:
+        catg = ""
+        for i in upgrade_categories:
+            catg += f"- \"{i}\"\n"
+        return f"""{category} is not a valid category. Valid categories are :
+{catg}\n"""
+    update_pet(user, pet)
+    save_db()
+    d = json_data["users"][user]["pets"][id]
+    u = d["xp"]//(100+d["level"]*100)
+    if amount > u:
+        return f"You can only do {u} upgrades to your pet."
+    if d["xp"] - (100+d["level"]*100)*amount < 0:
+        return """Oh there was a weird bug in pets_upgrade, report it to the
+developer please."""
+    d["level"] += u
+    d["xp"] -= (100+d["level"]*100)*amount
+    json_data["users"][user]["pets"][id] = d
+    save_db()
+    return f"""##### PETS #####
+Upgraded pet profile :
+{d["type"].capitalize()} {d["name"].strip().capitalize()}
+Id : {i}
+- Hunger :         {getpbar(10, d["hunger"], 100)} {d["hunger"]}%.
+- Hygiene :        {getpbar(10, d["hygiene"], 100)} {d["hygiene"]}%.
+- Fun :            {getpbar(10, d["fun"], 100)} {d["fun"]}%.
+- Love :           {getpbar(10, d["love"], 100)} {d["love"]}%.
+------------------------------------------------------
+- Level :          {d["level"]}.
+- XP :             {d["xp"]}.
+------------------------------------------------------
+- sustainability : {d["sustainability"]}.
+- hunt :           {d["hunt"]}.
+- attack :         {d["attack"]}.
+- defence :        {d["defence"]}.
+------------------------------------------------------
+|
+---> You can upgrade sustainability, hunt, attack or
+     defence by {d["xp"]//(100+d["level"]*100)} with
+     /pets_upgrade
+"""

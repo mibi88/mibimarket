@@ -19,7 +19,8 @@ chiptune_links = [
     "https://www.youtube.com/watch?v=v-AgYsawdAc",
     "https://www.youtube.com/watch?v=EMM9CV1SjF4",
     "https://www.youtube.com/watch?v=VGXTBeRwDdc",
-    "https://www.youtube.com/watch?v=FSKtNeBUO1E"
+    "https://www.youtube.com/watch?v=FSKtNeBUO1E",
+    "https://www.youtube.com/watch?v=EcTPUoFUN3I"
 ]
 
 @bot.command(
@@ -443,13 +444,13 @@ async def rob(ctx: interactions.CommandContext, user: str, beer: bool = False):
         ),
         interactions.Option(
             name="for_item",
-            description="For which item ? Set this arg. to 'coins' if you want to get coins.",
+            description="For which item? Set this arg. to 'coins' if you want to get coins.",
             type=interactions.OptionType.STRING,
             required=True
         ),
         interactions.Option(
             name="for_amount",
-            description="For how many items (or coins) ?",
+            description="For how many items (or coins)?",
             type=interactions.OptionType.INTEGER,
             required=True
         )
@@ -693,6 +694,130 @@ async def crafting_craft(ctx: interactions.CommandContext, item: str, amount: in
 async def crafting_view(ctx: interactions.CommandContext):
     user = f"{ctx.user.id}"
     out = do_craft_see(user)
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
+
+@bot.command(
+    name="pets_view",
+    description="See which pets you have.",
+    default_scope=False
+)
+
+async def pets_view(ctx: interactions.CommandContext):
+    user = f"{ctx.user.id}"
+    out = do_pets_see(user)
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
+
+@bot.command(
+    name="pets_adopt",
+    description="Adopt some pets.",
+    options = [
+        interactions.Option(
+            name="pet",
+            description="Which pet you want to adopt",
+            type=interactions.OptionType.STRING,
+            required=True,
+        ),
+        interactions.Option(
+            name="name",
+            description="The name of your pet",
+            type=interactions.OptionType.STRING,
+            required=True
+        ),
+        interactions.Option(
+            name="amount",
+            description="How many pets do you want to adopt",
+            type=interactions.OptionType.INTEGER,
+            required=False
+        )
+    ],
+    default_scope=False
+)
+
+async def pets_adopt(ctx: interactions.CommandContext, pet: str, name: str, amount: int = 1):
+    user = f"{ctx.user.id}"
+    out = do_pets_adopt(user, pet, name, amount)
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
+
+@bot.command(
+    name="pets_care",
+    description="Take care of a pet.",
+    options = [
+        interactions.Option(
+            name="id",
+            description="The id of your pet that you can get with /pets_view",
+            type=interactions.OptionType.STRING,
+            required=True,
+        ),
+        interactions.Option(
+            name="category",
+            description="Do you want to give him food, wash hin or play with him?",
+            type=interactions.OptionType.STRING,
+            required=True
+        ),
+        interactions.Option(
+            name="amount",
+            description="How much do you want to do it",
+            type=interactions.OptionType.INTEGER,
+            required=False
+        )
+    ],
+    default_scope=False
+)
+
+async def pets_care(ctx: interactions.CommandContext, id: str, category: str, amount: int = 1):
+    user = f"{ctx.user.id}"
+    out = do_pets_care(user, id, category, amount)
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
+
+@bot.command(
+    name="pets_upgrade",
+    description="Make your pet more powerful.",
+    options = [
+        interactions.Option(
+            name="id",
+            description="The id of your pet that you can get with /pets_view",
+            type=interactions.OptionType.STRING,
+            required=True,
+        ),
+        interactions.Option(
+            name="category",
+            description="What do you want to improve?",
+            type=interactions.OptionType.STRING,
+            required=True
+        ),
+        interactions.Option(
+            name="amount",
+            description="How much do you want to do it",
+            type=interactions.OptionType.INTEGER,
+            required=False
+        )
+    ],
+    default_scope=False
+)
+
+async def pets_upgrade(ctx: interactions.CommandContext, id: str, category: str, amount: int = 1):
+    user = f"{ctx.user.id}"
+    out = do_pets_upgrade(user, id, category, amount)
     # Displaying
     if len(out) > LIMIT:
         ntext, n = dtext(out, 0)
