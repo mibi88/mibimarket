@@ -843,9 +843,9 @@ def do_farm_harvest(user):
             add_items(user, real_item, amount)
             add_items(user, item, seeds_amount)
             to_del.append(i)
-    for i in to_del:
+    for n, i in enumerate(to_del):
         try:
-            del json_data["users"][user]["farm_items"][i]
+            del json_data["users"][user]["farm_items"][i - n]
         except:
             out += "Ow there was a little error. Please report it to the developper.\n"
     if out == "": out = "Nothing."
