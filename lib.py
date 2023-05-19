@@ -206,7 +206,7 @@ User {user}
 
 def add_items(user, item, num):
     if not item in json_data["users"][user]["inventory"]:
-        json_data["users"][user]["inventory"][item] = 1
+        json_data["users"][user]["inventory"][item] = num
     else:
         json_data["users"][user]["inventory"][item] += num
 
