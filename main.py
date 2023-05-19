@@ -241,15 +241,21 @@ async def use(ctx: interactions.CommandContext, item: str, num: int = 1):
             description="The user you want to rob.",
             type=interactions.OptionType.USER,
             required=True,
+        ),
+        interactions.Option(
+            name="beer",
+            description="Set this to true if you want to drink some beer before.",
+            type=interactions.OptionType.BOOLEAN,
+            required=False,
         )
     ],
     default_scope=False
 )
 
-async def rob(ctx: interactions.CommandContext, user: str):
+async def rob(ctx: interactions.CommandContext, user: str, beer: bool = False):
     user_st = f"{ctx.user.id}"
     user = f"{user.id}"
-    out = do_rob(user_st, user)
+    out = do_rob(user_st, user, beer)
     await ctx.send(f"```{out}```")
 
 ##################### MARKET #####################
@@ -440,6 +446,44 @@ async def farm_harvest(ctx: interactions.CommandContext):
 async def farm_view(ctx: interactions.CommandContext):
     user = f"{ctx.user.id}"
     out = do_farm_see(user)
+    await ctx.send(f"```{out}```")
+
+##################### CRAFTING #####################
+
+@bot.command(
+    name="crafting_craft",
+    description="Craft some items.",
+    options = [
+        interactions.Option(
+            name="item",
+            description="Which item you want to craft",
+            type=interactions.OptionType.STRING,
+            required=True,
+        ),
+        interactions.Option(
+            name="amount",
+            description="How many items you want to craft",
+            type=interactions.OptionType.INTEGER,
+            required=False
+        )
+    ],
+    default_scope=False
+)
+
+async def crafting_craft(ctx: interactions.CommandContext, item: str, amount: int = 1):
+    user = f"{ctx.user.id}"
+    out = do_craft_craft(user, item, amount)
+    await ctx.send(f"```{out}```")
+
+@bot.command(
+    name="crafting_view",
+    description="See what you can craft.",
+    default_scope=False
+)
+
+async def crafting_view(ctx: interactions.CommandContext):
+    user = f"{ctx.user.id}"
+    out = do_craft_see(user)
     await ctx.send(f"```{out}```")
 
 bot.start()
