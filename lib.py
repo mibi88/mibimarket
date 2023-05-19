@@ -482,13 +482,13 @@ def do_rob(user, dest, has_beer):
     div = 1
     if has_item(user, "beer", 1) and has_beer:
         message = "You drunk some beer before.\n"
-        del_items(user, "beer", 1)
         div = 2
     elif has_beer:
         return f"You do not have some beer."
     if not has_money(dest, 100*div):
         return f"User {dest} has less than ${100*div}."
     amount = random.randint(1, 100*div)
+    if has_beer: del_items(user, "beer", 1)
     if random.randint(1, 20//div) == 0:
         pay(user, 100//div)
         save_db()
