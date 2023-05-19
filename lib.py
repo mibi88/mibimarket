@@ -5,7 +5,7 @@ import datetime as dt
 
 json_data = {}
 
-VERSION = "v.0.1a2"
+VERSION = "v.0.1a3"
 
 ABOUT = f"""##### ABOUT MIBIMARKET #####
 
@@ -785,6 +785,7 @@ def do_farm_see(user):
         items = "Nothing."
     save_db()
     return f"""##### FARM #####
+Slots used : {len(json_data["users"][user]["farm_items"])}/{json_data["users"][user]["farm_size"]}
 The content of your fields :
 {items}
 """
@@ -814,7 +815,7 @@ Try to get a deed and use it, so you will get more fields."""
         "growing_speed": growspeed}
         json_data["users"][user]["farm_items"].append(data)
         del_items(user, item, 1)
-        out += f""" - {item} x{num}
+        out += f""" - {item} x1
    It will take ~{json_data["users"][user]["growing_speed"][item]}min to grow.\n"""
     if random.randint(1, 100) == 1:
         out += "But you broke your hoe !"
@@ -875,7 +876,8 @@ def do_craft_craft(user, item, num):
             del_items(user, i, n)
         add_items(user, item, craftings[item]["amount"])
     save_db()
-    return f"You crafted {item} x{num}"
+    amount = craftings[item]["amount"]
+    return f"You crafted {item} x{num*amount}"
 
 def do_craft_see(user):
     if not user in json_data["users"]:
