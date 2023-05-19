@@ -46,7 +46,7 @@ async def about(ctx: interactions.CommandContext):
     # Displaying
     if len(out) > LIMIT:
         ntext, n = dtext(out, 0)
-        message = await ctx.send(f"```{ntext}```", components = [leftb, rightb])
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
         cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
     else: await ctx.send(f"```{out}```")
 
@@ -92,7 +92,10 @@ async def button_left(ctx):
         if data[0]>0:
             data[0] -= 1
             out, n = dtext(data[2], data[0]*LIMIT)
-            message = await ctx.send(f"```{out}```", components = [leftb, rightb])
+            if data[0] <= 0:
+                message = await ctx.send(f"```{out}```", components = [rightb])
+            else:
+                message = await ctx.send(f"```{out}```", components = [leftb, rightb])
             del cmd_data[idstr]
             cmd_data[f"{message.id}"] = data
         else:
@@ -108,7 +111,10 @@ async def button_right(ctx):
         if data[0]<data[1]-1:
             data[0] += 1
             out, n = dtext(data[2], data[0]*LIMIT)
-            message = await ctx.send(f"```{out}```", components = [leftb, rightb])
+            if data[0] >= data[1]-1:
+                message = await ctx.send(f"```{out}```", components = [leftb])
+            else:
+                message = await ctx.send(f"```{out}```", components = [leftb, rightb])
             del cmd_data[idstr]
             cmd_data[f"{message.id}"] = data
         else:
@@ -137,7 +143,7 @@ async def profile(ctx: interactions.CommandContext, user: str = None):
     # Displaying
     if len(profile) > LIMIT:
         ntext, n = dtext(profile, 0)
-        message = await ctx.send(f"```{ntext}```", components = [leftb, rightb])
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
         cmd_data[f"{message.id}"] = [0, ceil(len(profile)/LIMIT), profile]
     else: await ctx.send(f"```{profile}```")
 
@@ -227,7 +233,7 @@ async def shop_view(ctx: interactions.CommandContext):
     # Displaying
     if len(out) > LIMIT:
         ntext, n = dtext(out, 0)
-        message = await ctx.send(f"```{ntext}```", components = [leftb, rightb])
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
         cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
     else: await ctx.send(f"```{out}```")
 
@@ -452,7 +458,7 @@ async def market_view(ctx: interactions.CommandContext, item: str):
     # Displaying
     if len(out) > LIMIT:
         ntext, n = dtext(out, 0)
-        message = await ctx.send(f"```{ntext}```", components = [leftb, rightb])
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
         cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
     else: await ctx.send(f"```{out}```")
 
@@ -516,7 +522,7 @@ async def farm_plant(ctx: interactions.CommandContext, item: str, num: int = 1):
     # Displaying
     if len(out) > LIMIT:
         ntext, n = dtext(out, 0)
-        message = await ctx.send(f"```{ntext}```", components = [leftb, rightb])
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
         cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
     else: await ctx.send(f"```{out}```")
 
@@ -532,7 +538,7 @@ async def farm_harvest(ctx: interactions.CommandContext):
     # Displaying
     if len(out) > LIMIT:
         ntext, n = dtext(out, 0)
-        message = await ctx.send(f"```{ntext}```", components = [leftb, rightb])
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
         cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
     else: await ctx.send(f"```{out}```")
 
@@ -548,7 +554,7 @@ async def farm_view(ctx: interactions.CommandContext):
     # Displaying
     if len(out) > LIMIT:
         ntext, n = dtext(out, 0)
-        message = await ctx.send(f"```{ntext}```", components = [leftb, rightb])
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
         cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
     else: await ctx.send(f"```{out}```")
 
@@ -591,7 +597,7 @@ async def crafting_view(ctx: interactions.CommandContext):
     # Displaying
     if len(out) > LIMIT:
         ntext, n = dtext(out, 0)
-        message = await ctx.send(f"```{ntext}```", components = [leftb, rightb])
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
         cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
     else: await ctx.send(f"```{out}```")
 
