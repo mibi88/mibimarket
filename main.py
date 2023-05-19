@@ -16,7 +16,10 @@ chiptune_links = [
     "https://www.youtube.com/watch?v=Bpy59q0ddfo",
     "https://www.youtube.com/watch?v=HMP18fU4Cms",
     "https://www.youtube.com/watch?v=ULbnOsLojA8",
-    "https://www.youtube.com/watch?v=v-AgYsawdAc"
+    "https://www.youtube.com/watch?v=v-AgYsawdAc",
+    "https://www.youtube.com/watch?v=EMM9CV1SjF4",
+    "https://www.youtube.com/watch?v=VGXTBeRwDdc",
+    "https://www.youtube.com/watch?v=FSKtNeBUO1E"
 ]
 
 @bot.command(
@@ -158,7 +161,12 @@ async def profile(ctx: interactions.CommandContext, user: str = None):
 async def fish(ctx: interactions.CommandContext):
     user = f"{ctx.user.id}"
     out = do_fish(user)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="dig",
@@ -169,7 +177,12 @@ async def fish(ctx: interactions.CommandContext):
 async def dig(ctx: interactions.CommandContext):
     user = f"{ctx.user.id}"
     out = do_dig(user)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="shop_sell",
@@ -194,7 +207,12 @@ async def dig(ctx: interactions.CommandContext):
 async def shop_sell(ctx: interactions.CommandContext, item: str, amount: int = 1):
     user = f"{ctx.user.id}"
     out = do_sell(user, item, amount)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="shop_buy",
@@ -219,7 +237,12 @@ async def shop_sell(ctx: interactions.CommandContext, item: str, amount: int = 1
 async def shop_buy(ctx: interactions.CommandContext, item: str, amount: int = 1):
     user = f"{ctx.user.id}"
     out = do_buy(user, item, amount)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="shop_view",
@@ -246,7 +269,28 @@ async def shop_view(ctx: interactions.CommandContext):
 async def dive(ctx: interactions.CommandContext):
     user = f"{ctx.user.id}"
     out = do_dive(user)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
+
+@bot.command(
+    name="hunt",
+    description="Hunt some animals in the woods.",
+    default_scope=False
+)
+
+async def hunt(ctx: interactions.CommandContext):
+    user = f"{ctx.user.id}"
+    out = do_hunt(user)
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="scratch",
@@ -257,7 +301,12 @@ async def dive(ctx: interactions.CommandContext):
 async def scratch(ctx: interactions.CommandContext):
     user = f"{ctx.user.id}"
     out = do_scratch(user)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="deposit",
@@ -276,7 +325,12 @@ async def scratch(ctx: interactions.CommandContext):
 async def deposit(ctx: interactions.CommandContext, num: int):
     user = f"{ctx.user.id}"
     out = do_deposit(user, num)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="withdraw",
@@ -295,7 +349,12 @@ async def deposit(ctx: interactions.CommandContext, num: int):
 async def withdraw(ctx: interactions.CommandContext, num: int):
     user = f"{ctx.user.id}"
     out = do_withdraw(user, num)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="use",
@@ -320,7 +379,12 @@ async def withdraw(ctx: interactions.CommandContext, num: int):
 async def use(ctx: interactions.CommandContext, item: str, num: int = 1):
     user = f"{ctx.user.id}"
     out = do_use(user, item, num)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="rob",
@@ -346,7 +410,12 @@ async def rob(ctx: interactions.CommandContext, user: str, beer: bool = False):
     user_st = f"{ctx.user.id}"
     user = f"{user.id}"
     out = do_rob(user_st, user, beer)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 ##################### MARKET #####################
 
@@ -392,7 +461,12 @@ async def market_add(ctx: interactions.CommandContext, type: str,
 item: str, for_item: str, amount: int = 1, for_amount: int = 1):
     user = f"{ctx.user.id}"
     out = do_market_add(user, type, item, amount, for_item, for_amount)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="market_remove",
@@ -411,7 +485,12 @@ item: str, for_item: str, amount: int = 1, for_amount: int = 1):
 async def market_remove(ctx: interactions.CommandContext, id: int):
     user = f"{ctx.user.id}"
     out = do_market_remove(user, id)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="market_accept",
@@ -436,7 +515,12 @@ async def market_remove(ctx: interactions.CommandContext, id: int):
 async def market_accept(ctx: interactions.CommandContext, id: int, amount: int = 1):
     user = f"{ctx.user.id}"
     out = do_market_accept(user, id, amount)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="market_view",
@@ -473,7 +557,12 @@ async def market_view(ctx: interactions.CommandContext, item: str):
 async def economy_info(ctx: interactions.CommandContext):
     user = f"{ctx.user.id}"
     out = view_stat(user)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="price",
@@ -492,7 +581,12 @@ async def economy_info(ctx: interactions.CommandContext):
 async def price(ctx: interactions.CommandContext, item: str):
     user = f"{ctx.user.id}"
     out = view_price(user, item)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 ##################### FARMING #####################
 
@@ -583,7 +677,12 @@ async def farm_view(ctx: interactions.CommandContext):
 async def crafting_craft(ctx: interactions.CommandContext, item: str, amount: int = 1):
     user = f"{ctx.user.id}"
     out = do_craft_craft(user, item, amount)
-    await ctx.send(f"```{out}```")
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
 
 @bot.command(
     name="crafting_view",

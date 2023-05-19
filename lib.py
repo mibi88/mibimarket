@@ -25,6 +25,9 @@ The commands that you can use :
 - /dive          : Dive in the sea to find some items. With a wetsuit you have
                    2x more chances to find items. You have 1 chance of 100 to
                    break your wetsuit.
+- /hunt          : Hunt some animals in the woods. To do this action, you need
+                   to have a hunting rifle and one beer. The beer will be used
+                   when you hunt.
 - /scratch       : Scratch a ticket and see what you won. You can only do that
                    1x per hour. This is in some cases the only way to get some
                    items.
@@ -67,7 +70,8 @@ existing_items = ["gray fish", "worm", "box of sand", "golden tux",
 "golden fish", "diamond fish", "bank note", "farmer box", "classic box",
 "potato seeds", "watermelon seeds", "corn seeds", "bone seeds",
 "carrot seeds", "brocoli seeds", "hoe", "potato", "watermelon", "corn", "bone",
-"carrot", "brocoli", "beer", "deed", "barrel"]
+"carrot", "brocoli", "beer", "deed", "barrel", "hunting rifle", "rabbit",
+"dog", "cat", "mouse", "fox", "panda"]
 
 farm_out = {
     "potato seeds": "potato",
@@ -125,7 +129,8 @@ classic_box_items = [
     "fishing pole",
     "bank note",
     "deed",
-    "plastic tux"
+    "plastic tux",
+    "hunting rifle"
 ]
 
 farmer_box_items = [
@@ -143,7 +148,8 @@ farmer_box_items = [
     "bone",
     "carrot",
     "brocoli",
-    "deed"
+    "deed",
+    "hunting rifle"
 ]
 
 DATABASE = "db.json"
@@ -181,8 +187,9 @@ else:
     "potato seeds": 5, "watermelon seeds": 30, "corn seeds": 10, "bone seeds": 15,
     "carrot seeds": 20, "brocoli seeds": 25, "hoe": 30, "potato": 10,
     "watermelon": 35, "corn": 15, "bone": 20, "carrot": 25, "brocoli": 30,
-    "beer": 40, "deed": 85, "barrel": 75}
-    json_data["non_sellable_prices"] = {"worm": 1, "seaweed": 3}
+    "beer": 40, "deed": 85, "barrel": 75, "hunting rifle": 65}
+    json_data["non_sellable_prices"] = {"worm": 1, "seaweed": 3, "rabbit": 20,
+    "dog": 100, "cat": 150, "mouse": 150, "fox": 150, "panda": 150}
     json_data["inflation"] = 0
     json_data["scratch_update"] = 255
     json_data["scratch_now"] = []
@@ -202,10 +209,12 @@ def create_user(user):
     "golden fish": 2, "diamond fish": 1}
     json_data["users"][user]["probas"]["dig"] = {"worm": 30, "box of sand": 10,
     "golden tux": 1, "plastic tux": 6, "shovel": 2, "bank note": 4, "deed": 2,
-    "hoe": 4}
+    "hoe": 4, "hunting rifle": 2}
     json_data["users"][user]["probas"]["dive"] = {"seaweed": 30,
     "fishing pole": 10, "wetsuit": 5, "marble tux": 4, "golden treasure": 1,
     "barrel": 5}
+    json_data["users"][user]["probas"]["hunt"] = {"rabbit": 40, "dog": 10, "cat": 5,
+    "mouse": 5, "fox": 5, "panda": 5}
     json_data["users"][user]["lastscratch"] = 255
     json_data["users"][user]["farm_size"] = 9
     json_data["users"][user]["farm_items"] = []
@@ -428,6 +437,28 @@ def do_dive(user):
             del_items(user, "wetsuit", 1)
     save_db()
     return f"""##### YOU FOUND #####
+{items}"""
+
+def do_hunt(user):
+    if not user in json_data["users"]:
+        create_user(user)
+    if not has_item(user, "hunting rifle", 1):
+        return "You need to buy a hunting rifle ..."
+    if not has_item(user, "beer", 1):
+        return "You need to have some beer ..."
+    del_items(user, "beer", 1)
+    proba = json_data["users"][user]["probas"]["hunt"]
+    items = ""
+    for k, i in proba.items():
+        r = random.randint(0, 100)
+        if r < i:
+            add_items(user, k, 1)
+            items += f"- {k} x{1}\n"
+    if items == "":
+        items = "Nothing."
+    save_db()
+    return f"""##### YOU HUNTED #####
+You drunk some beer like every good hunter.
 {items}"""
 
 def do_use(user, item, num):
@@ -893,3 +924,5 @@ def do_craft_see(user):
     return f"""##### CRAFTINGS #####
 {out}
 """
+
+##################### PETS #####################
