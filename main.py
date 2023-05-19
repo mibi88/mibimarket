@@ -7,7 +7,9 @@ calls = {}
 
 chiptune_links = [
     "https://www.youtube.com/watch?v=Hj3W6nthrKU",
-    "https://www.youtube.com/watch?v=GLMhBE99byM"
+    "https://www.youtube.com/watch?v=GLMhBE99byM",
+    "https://www.youtube.com/watch?v=LUJNH_36GjQ",
+    "https://www.youtube.com/watch?v=ByKCPbScgsU"
 ]
 
 @bot.command(
@@ -155,6 +157,17 @@ async def shop_view(ctx: interactions.CommandContext):
 async def dive(ctx: interactions.CommandContext):
     user = f"{ctx.user.id}"
     out = do_dive(user)
+    await ctx.send(f"```{out}```")
+
+@bot.command(
+    name="scratch",
+    description="Scratch a ticket and see what you won.",
+    default_scope=False
+)
+
+async def scratch(ctx: interactions.CommandContext):
+    user = f"{ctx.user.id}"
+    out = do_scratch(user)
     await ctx.send(f"```{out}```")
 
 @bot.command(

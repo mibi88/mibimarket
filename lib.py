@@ -1,10 +1,11 @@
 import json
 import os
 import random
+import datetime as dt
 
 json_data = {}
 
-VERSION = "v.0.1a1"
+VERSION = "v.0.1a2"
 
 ABOUT = f"""##### ABOUT MIBIMARKET #####
 
@@ -24,6 +25,9 @@ The commands that you can use :
 - /dive          : Dive in the sea to find some items. With a wetsuit you have
                    2x more chances to find items. You have 1 chance of 100 to
                    break your wetsuit.
+- /scratch       : Scratch a ticket and see what you won. You can only do that
+                   1x per hour. This is in some cases the only way to get some
+                   items.
 - /deposit       : Deposit some coins on your bank account.
 - /withdraw      : Withdraw some coins from your bank account.
 - /use           : Use an item. If you use the following items, that's what it
@@ -51,7 +55,10 @@ usable_items = ["bank note"]
 existing_items = ["gray fish", "worm", "box of sand", "golden tux",
 "plastic tux", "shovel", "fishing pole", "seaweed", "wetsuit", "marble tux",
 "golden treasure", "exotic fish", "multicolor fish", "luminescent fish",
-"golden fish", "diamond fish", "bank note"]
+"golden fish", "diamond fish", "bank note", "farmer box", "classic box",
+"potato seeds", "watermelon seeds", "corn seeds", "bone seeds",
+"carrot seeds", "brocoli seeds", "hoe", "potato", "watermelon", "corn", "bone",
+"carrot", "brocoli", "beer"]
 
 DATABASE = "db.json"
 
@@ -84,9 +91,15 @@ else:
     "golden tux": 320, "plastic tux": 6, "shovel": 25, "fishing pole": 65,
     "wetsuit": 65, "marble tux": 220, "golden treasure": 860, "exotic fish": 25,
     "multicolor fish": 45, "luminescent fish": 140, "golden fish": 280,
-    "diamond fish": 1120, "bank note": 65}
+    "diamond fish": 1120, "bank note": 65, "farmer box": 115, "classic box": 85,
+    "potato seeds": 5, "watermelon seeds": 30, "corn seeds": 10, "bone seeds": 15,
+    "carrot seeds": 20, "brocoli seeds": 25, "hoe": 30, "potato": 10,
+    "watermelon": 35, "corn": 15, "bone": 20, "carrot": 25, "brocoli": 30,
+    "beer": 40}
     json_data["non_sellable_prices"] = {"worm": 1, "seaweed": 3}
     json_data["inflation"] = 0
+    json_data["scratch_update"] = 255
+    json_data["scratch_now"] = []
     save_db()
 
 ##################### PROFILE #####################
@@ -105,6 +118,7 @@ def create_user(user):
     "golden tux": 1, "plastic tux": 6, "shovel": 2, "bank note": 4}
     json_data["users"][user]["probas"]["dive"] = {"seaweed": 30,
     "fishing pole": 10, "wetsuit": 5, "marble tux": 4, "golden treasure": 1}
+    json_data["users"][user]["lastscratch"] = 255
 
 def get_profile(user):
     if not user in json_data["users"]:
@@ -370,6 +384,35 @@ def do_rob(user, dest):
         get_money(user, amount)
         save_db()
         return f"You robbed ${amount}"
+
+def do_scratch(user):
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    hour = dt.datetime.now().hour
+    if hour == json_data["users"][user]["lastscratch"]:
+        return f"You already scratched in this hour"
+    if json_data["scratch_update"] != hour:
+        json_data["scratch_now"] = []
+        num = random.randint(1, 5)
+        for i in range(num):
+            json_data["scratch_now"].append(random.choice(existing_items))
+        json_data["scratch_update"] = hour
+    items_got = ""
+    scratch_items = ""
+    for i in json_data["scratch_now"]:
+        scratch_items += f" - {i}\n"
+        if random.randint(1, len(json_data["scratch_now"])) == 1:
+            items_got += f" - {i}\n"
+            add_items(user, i, 1)
+    json_data["users"][user]["lastscratch"] = hour
+    if items_got == "": items_got = "Nothing.\n"
+    save_db()
+    return f"""##### YOU SCRATCHED #####
+{items_got}
+And you could get :
+{scratch_items}
+"""
 
 ##################### MARKET #####################
 
