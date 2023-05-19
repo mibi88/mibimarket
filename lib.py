@@ -142,7 +142,7 @@ def del_items(user, item, num):
 
 def has_item(user, item, num):
     if item in json_data["users"][user]["inventory"]:
-        if json_data["users"][user]["inventory"][item] >= num:
+        if json_data["users"][user]["inventory"][item] >= num and num > 0:
             return 1
 
 ##################### MONEY #####################
@@ -390,7 +390,10 @@ def update_marketprice():
 def do_market_add(user, type, item, amount, for_item, for_amount):
     type = type.lower().strip()
     item = item.lower().strip()
-    for_item = for_item.lower()
+    for_item = for_item.lower().strip()
+    if for_item != "coins" and amount != for_amount:
+        return """If you post for coins,
+amount and for_amount need to be the same."""
     if not user in json_data["users"]:
         create_user(user)
         save_db()
@@ -473,7 +476,8 @@ def do_market_accept(user, id, amount):
                 return f"You do not have ${for_amount} !"
             add_items(user, json_data["market"][id]["item"], amount)
             del_items(dest, json_data["market"][id]["item"], amount)
-            price = int(json_data["market"][id]["for_amount"]/json_data["market"][id]["amount"]*amount)
+            price = round(json_data["market"][id]["for_amount"]/json_data["market"][id]["amount"]*amount)
+            if price < 1: price = 1
             pay(user, price)
             get_money(dest, price)
         else:
@@ -497,7 +501,8 @@ def do_market_accept(user, id, amount):
                 return f"You do not have ${coins} !"
             del_items(user, json_data["market"][id]["item"], amount)
             add_items(dest, json_data["market"][id]["item"], amount)
-            price = int(json_data["market"][id]["for_amount"]/json_data["market"][id]["amount"]*amount)
+            price = round(json_data["market"][id]["for_amount"]/json_data["market"][id]["amount"]*amount)
+            if price < 1: price = 1
             get_money(user, price)
             pay(dest, price)
         else:
