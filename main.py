@@ -36,11 +36,9 @@ async def chiptune(ctx: interactions.CommandContext):
 
 async def about(ctx: interactions.CommandContext):
     user = f"{ctx.user.id}"
-    if not user in json_data["users"]:
-        create_user(user)
-        save_db()
     out = about_this_bot(user)
-    await ctx.send(f"```{out}```")
+    await ctx.send(f"```{out[:1000]}```")
+    await ctx.send(f"```{out[1000:]}```")
 
 ##################### PROFILE #####################
 

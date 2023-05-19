@@ -746,7 +746,7 @@ def do_farm_see(user):
         time = int(json_data["users"][user]["growing_speed"][item]-(get_growing_speed(user, data)//5*5))
         if time < 0: time = 0
         items += f" - {item} : {stat}\n"
-        if not data["stat"]: items += "   It will take ~{time}min to grow.\n"
+        if not data["stat"]: items += f"   It will take ~{time}min to grow.\n"
     if items == "":
         items = "Nothing."
     save_db()
@@ -812,6 +812,7 @@ def do_farm_harvest(user):
     for i in to_del:
         del json_data["users"][user]["farm_items"][i]
     if out == "": out = "Nothing."
+    save_db()
     return f"""##### FARM #####
 You harvested :
 {out}
