@@ -4,6 +4,8 @@ import random
 
 json_data = {}
 
+usable_items = ["bank note"]
+
 existing_items = ["gray fish", "worm", "box of sand", "golden tux",
 "plastic tux", "shovel", "fishing pole", "seaweed", "wetsuit", "marble tux",
 "golden treasure", "exotic fish", "multicolor fish", "luminescent fish",
@@ -39,7 +41,8 @@ else:
     json_data["prices"] = {"gray fish": 20, "box of sand": 40,
     "golden tux": 320, "plastic tux": 6, "shovel": 25, "fishing pole": 65,
     "wetsuit": 65, "marble tux": 220, "golden treasure": 860, "exotic fish": 25,
-    "multicolor fish": 45, "luminescent fish": 140, "golden fish": 280}
+    "multicolor fish": 45, "luminescent fish": 140, "golden fish": 280,
+    "diamond fish": 1120, "bank note": 65}
     json_data["non_sellable_prices"] = {"worm": 1, "seaweed": 3}
     json_data["inflation"] = 0
     save_db()
@@ -185,7 +188,7 @@ def do_dig(user):
 
 def do_sell(user, item, num):
     global existing_items
-    item = item.lower()
+    item = item.lower().strip()
     if not user in json_data["users"]:
         create_user(user)
     if not item in existing_items:
@@ -202,13 +205,14 @@ Try to sell it in the market."""
         json_data["shop"][item] += num
     else:
         json_data["shop"][item] = num
+    update_marketprice()
     save_db()
     return f"""##### YOU SOLD #####
 - {item} x{num} for ${price} ({json_data["inflation"]}% inflation)"""
 
 def do_buy(user, item, num):
     global existing_items
-    item = item.lower()
+    item = item.lower().strip()
     if not user in json_data["users"]:
         create_user(user)
     if not item in existing_items:
@@ -225,6 +229,7 @@ Check out the market."""
         json_data["shop"][item] -= num
     else:
         del json_data["shop"][item]
+    update_marketprice()
     save_db()
     return f"""##### YOU BROUGHT #####
 - {item} x{num} for ${price} ({json_data["inflation"]}% inflation)"""
@@ -268,6 +273,54 @@ def do_dive(user):
     return f"""##### YOU FOUND #####
 {items}"""
 
+def do_use(user, item, num):
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    item = item.lower().strip()
+    if not item in existing_items:
+        return f"The item {item} item do not exists"
+    if not has_item(user, item, num):
+        return f"You do not have {item}"
+    if not item in usable_items:
+        return f"You cannot use {item}"
+    used = 1
+    for i in range(num):
+        if item == "bank note":
+            json_data["users"][user]["bank_max"] += random.randint(20000, 40000)
+        else:
+            used = 0
+    if used == 0:
+        save_db()
+        return f"""There was a bug that made that you could not use this item.
+        Please post an issue or contact the developper."""
+    else:
+        del_items(user, item, num)
+    save_db()
+    return f"You used {num}x {item}"
+
+def do_rob(user, dest):
+    if not user in json_data["users"]:
+        create_user(user)
+        save_db()
+    if not dest in json_data["users"]:
+        create_user(dest)
+        save_db()
+    if not has_money(user, 100):
+        return f"You need to have at least $100."
+    if not has_money(dest, 100):
+        return f"User {dest} has less than $100."
+    amount = random.randint(1, 100)
+    if random.randint(1, 20) == 0:
+        pay(user, 100)
+        save_db()
+        return f"You where caught and paid $100"
+    else:
+        pay(dest, amount)
+        get_money(user, amount)
+        save_db()
+        return f"You robbed ${amount}"
+
 ##################### MARKET #####################
 
 def update_marketprice():
@@ -277,10 +330,16 @@ def update_marketprice():
     elif json_data["marketprice"] < 100:
         if random.randint(1, 30): json_data["marketprice"] += 1
         if random.randint(1, 30): json_data["inflation"] -= 1
+    shop_sum = 0
+    for i in json_data["shop"].values(): shop_sum += i
+    if shop_sum < 50:
+        if random.randint(1, 60): json_data["inflation"] += 1
+    elif shop_sum < 100:
+        if random.randint(1, 60): json_data["inflation"] -= 1
 
 def do_market_add(user, type, item, amount, for_item, for_amount):
-    type = type.lower()
-    item = item.lower()
+    type = type.lower().strip()
+    item = item.lower().strip()
     for_item = for_item.lower()
     if not user in json_data["users"]:
         create_user(user)
@@ -412,7 +471,7 @@ You got :
     return text
 
 def do_market_see(user, item):
-    item = item.lower()
+    item = item.lower().strip()
     if not item in existing_items:
         return f"{item} is not a valid item !"
     if not user in json_data["users"]:

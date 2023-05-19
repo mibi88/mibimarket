@@ -180,6 +180,51 @@ async def withdraw(ctx: interactions.CommandContext, num: int):
     out = do_withdraw(user, num)
     await ctx.send(f"```{out}```")
 
+@bot.command(
+    name="use",
+    description="Use an item.",
+    options = [
+        interactions.Option(
+            name="item",
+            description="Which item du you want to use.",
+            type=interactions.OptionType.STRING,
+            required=True,
+        ),
+        interactions.Option(
+            name="num",
+            description="How many items do you want to use.",
+            type=interactions.OptionType.INTEGER,
+            required=False,
+        )
+    ],
+    default_scope=False
+)
+
+async def use(ctx: interactions.CommandContext, item: str, num: int = 1):
+    user = f"{ctx.user.id}"
+    out = do_use(user, item, num)
+    await ctx.send(f"```{out}```")
+
+@bot.command(
+    name="rob",
+    description="Rob someone.",
+    options = [
+        interactions.Option(
+            name="user",
+            description="The user you want to rob.",
+            type=interactions.OptionType.USER,
+            required=True,
+        )
+    ],
+    default_scope=False
+)
+
+async def rob(ctx: interactions.CommandContext, user: str):
+    user_st = f"{ctx.user.id}"
+    user = f"{user.id}"
+    out = do_rob(user_st, user)
+    await ctx.send(f"```{out}```")
+
 ##################### MARKET #####################
 
 @bot.command(
