@@ -325,17 +325,17 @@ def do_rob(user, dest):
 
 def update_marketprice():
     if len(json_data["market"]) < 50 and json_data["marketprice"] > 1:
-        if random.randint(1, 30): json_data["marketprice"] -= 1
-        if random.randint(1, 30): json_data["inflation"] += 1
+        if random.randint(0, 30) == 0: json_data["marketprice"] -= 1
+        if random.randint(0, 30) == 0: json_data["inflation"] += 1
     elif json_data["marketprice"] < 100:
-        if random.randint(1, 30): json_data["marketprice"] += 1
-        if random.randint(1, 30): json_data["inflation"] -= 1
+        if random.randint(0, 30) == 0: json_data["marketprice"] += 1
+        if random.randint(0, 30) == 0: json_data["inflation"] -= 1
     shop_sum = 0
     for i in json_data["shop"].values(): shop_sum += i
     if shop_sum < 50:
-        if random.randint(1, 60): json_data["inflation"] += 1
+        if random.randint(0, 60) == 0: json_data["inflation"] += 1
     elif shop_sum < 100:
-        if random.randint(1, 60): json_data["inflation"] -= 1
+        if random.randint(0, 60) == 0: json_data["inflation"] -= 1
 
 def do_market_add(user, type, item, amount, for_item, for_amount):
     type = type.lower().strip()
