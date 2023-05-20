@@ -17,9 +17,7 @@ So I decided today to publish the source code and for each commit I made a commi
 
 ## Starting the bot
 
-**/!\ This bot requires interactions.py==4.4.0/!\**
-
-**Compatibility with interactions.py 5.x.x will be made soon.**
+This bot requires interactions.py 5
 
 Put your token in bot_token.py and then you just need to start the bot !
 
