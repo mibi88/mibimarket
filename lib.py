@@ -6,7 +6,7 @@ from pbar import *
 
 json_data = {}
 
-VERSION = "v.0.1a4"
+VERSION = "v.0.1a5"
 
 ABOUT = f"""##### ABOUT MIBIMARKET #####
 
@@ -70,12 +70,14 @@ The commands that you can use :
 - /pets_upgrade  : Upgrade your pet, this is useful to improve his
                    sustainability, make him better at hunting, in attack in
                    petfights or in defence. This requires a high XP.
+- /explore       : Go on a trip to get some cool items.
 + an easter egg HAHA !
 
 Contact me at <mbcontact50@gmail.com> if you find a bug.
 """
 
-usable_items = ["bank note", "deed", "farmer box", "classic box", "pet bowl"]
+usable_items = ["bank note", "deed", "farmer box", "classic box", "pet bowl",
+"ancient box"]
 
 existing_items = ["gray fish", "worm", "box of sand", "golden tux",
 "plastic tux", "shovel", "fishing pole", "seaweed", "wetsuit", "marble tux",
@@ -84,7 +86,10 @@ existing_items = ["gray fish", "worm", "box of sand", "golden tux",
 "potato seeds", "watermelon seeds", "corn seeds", "bone seeds",
 "carrot seeds", "brocoli seeds", "hoe", "potato", "watermelon", "corn", "bone",
 "carrot", "brocoli", "beer", "deed", "barrel", "hunting rifle", "rabbit",
-"dog", "cat", "mouse", "fox", "panda", "pet food", "water bucket", "pet toy", "pet bowl"]
+"dog", "cat", "mouse", "fox", "panda", "pet food", "water bucket", "pet toy",
+"pet bowl", "train ticket", "ancient tux mask", "flying carpet",
+"ancient sceptre", "banana peel", "ancient box", "car", "golden sword",
+"frying pan", "onion", "beetroot", "beetroot seeds", "melon", "melon seeds"]
 
 farm_out = {
     "potato seeds": "potato",
@@ -92,7 +97,10 @@ farm_out = {
     "bone seeds": "bone",
     "carrot seeds": "carrot",
     "brocoli seeds": "brocoli",
-    "watermelon seeds": "watermelon"
+    "watermelon seeds": "watermelon",
+    "onion": "onion",
+    "beetroot seeds": "beetroot",
+    "melon seeds": "melon"
 }
 
 farm_amount = {
@@ -101,7 +109,10 @@ farm_amount = {
     "bone seeds": [2, 6],
     "carrot seeds": [2, 12],
     "brocoli seeds": [1, 3],
-    "watermelon seeds": [2, 3]
+    "watermelon seeds": [2, 3],
+    "onion": [1, 3],
+    "beetroot seeds": [2, 12],
+    "melon seeds": [2, 3]
 }
 
 craftings = {
@@ -129,6 +140,14 @@ craftings = {
         "recipe": {"watermelon": 1},
         "amount": 2
     },
+    "beetroot seeds": {
+        "recipe": {"beetroot": 1},
+        "amount": 2
+    },
+    "melon seeds": {
+        "recipe": {"melon": 1},
+        "amount": 2
+    },
     "beer": {
         "recipe": {"corn": 5, "barrel": 1},
         "amount": 5
@@ -139,37 +158,50 @@ craftings = {
     }
 }
 
-classic_box_items = [
-    "beer",
-    "shovel",
-    "wetsuit",
-    "fishing pole",
-    "bank note",
-    "deed",
-    "plastic tux",
-    "hunting rifle"
-]
-
-farmer_box_items = [
-    "beer",
-    "hoe",
-    "potato seeds",
-    "corn seeds",
-    "bone seeds",
-    "carrot seeds",
-    "brocoli seeds",
-    "watermelon seeds",
-    "potato",
-    "watermelon",
-    "corn",
-    "bone",
-    "carrot",
-    "brocoli",
-    "deed",
-    "hunting rifle",
-    "pet bowl",
-    "pet toy"
-]
+boxes = {
+    "classic box": [
+        "beer",
+        "shovel",
+        "wetsuit",
+        "fishing pole",
+        "bank note",
+        "deed",
+        "plastic tux",
+        "hunting rifle"
+    ],
+    "farmer box": [
+        "beer",
+        "hoe",
+        "potato seeds",
+        "corn seeds",
+        "bone seeds",
+        "carrot seeds",
+        "brocoli seeds",
+        "watermelon seeds",
+        "potato",
+        "watermelon",
+        "corn",
+        "bone",
+        "carrot",
+        "brocoli",
+        "deed",
+        "hunting rifle",
+        "pet bowl",
+        "pet toy"
+    ],
+    "ancient box": [
+        "train ticket",
+        "flying carpet",
+        "ancient sceptre",
+        "banana peel",
+        "car",
+        "golden sword",
+        "frying pan",
+        "onion",
+        "beetroot",
+        "melon"
+    ]
+}
 
 pets = [
     "rabbit",
@@ -233,7 +265,12 @@ else:
     "potato seeds": 5, "watermelon seeds": 30, "corn seeds": 10, "bone seeds": 15,
     "carrot seeds": 20, "brocoli seeds": 25, "hoe": 30, "potato": 10,
     "watermelon": 35, "corn": 15, "bone": 20, "carrot": 25, "brocoli": 30,
-    "beer": 40, "deed": 85, "barrel": 75, "hunting rifle": 65}
+    "beer": 40, "deed": 85, "barrel": 75, "hunting rifle": 65,
+    "train ticket": 35, "pet food": 10, "water bucket": 5, "pet toy": 15,
+    "pet bowl": 25, "ancient tux mask": 36750, "flying carpet": 32520,
+    "ancient sceptre": 35770, "banana peel": 3, "ancient box": 7250,
+    "car": 20340, "golden sword": 2400, "frying pan": 60, "onion": 3,
+    "beetroot": 2, "beetroot seeds": 1, "melon": 7, "melon seeds": 2}
     json_data["non_sellable_prices"] = {"worm": 1, "seaweed": 3, "rabbit": 20,
     "dog": 100, "cat": 150, "mouse": 150, "fox": 150, "panda": 150}
     json_data["inflation"] = 0
@@ -255,18 +292,23 @@ def create_user(user):
     "golden fish": 2, "diamond fish": 1}
     json_data["users"][user]["probas"]["dig"] = {"worm": 30, "box of sand": 10,
     "golden tux": 1, "plastic tux": 6, "shovel": 2, "bank note": 4, "deed": 2,
-    "hoe": 4, "hunting rifle": 2, "pet toy": 2}
+    "hoe": 4, "hunting rifle": 2, "pet toy": 2, "train ticket": 2, "onion": 11,
+    "frying pan": 1}
     json_data["users"][user]["probas"]["dive"] = {"seaweed": 30,
     "fishing pole": 10, "wetsuit": 5, "marble tux": 4, "golden treasure": 1,
     "barrel": 5, "water bucket": 5}
     json_data["users"][user]["probas"]["hunt"] = {"rabbit": 40, "dog": 10, "cat": 5,
     "mouse": 5, "fox": 5, "panda": 5}
+    json_data["users"][user]["probas"]["explore"] = {"golden tux": 10,
+    "train ticket": 15, "flying carpet": 1, "ancient sceptre": 1,
+    "banana peel": 60, "car": 1, "golden sword": 1, "frying pan": 2,
+    "onion": 15, "beetroot": 5, "melon": 3, "ancient box": 1}
     json_data["users"][user]["lastscratch"] = 255
     json_data["users"][user]["farm_size"] = 9
     json_data["users"][user]["farm_items"] = []
     json_data["users"][user]["growing_speed"] = {"watermelon seeds": 30,
     "brocoli seeds": 25, "carrot seeds": 20, "bone seeds": 15, "corn seeds": 10,
-    "potato seeds": 5}
+    "potato seeds": 5, "onion": 15, "beetroot seeds": 15, "melon seeds": 30}
     json_data["users"][user]["pets"] = {}
     json_data["users"][user]["pets_max_num"] = {}
 
@@ -527,12 +569,11 @@ def do_use(user, item, num):
             json_data["users"][user]["bank_max"] += random.randint(20000, 40000)
         elif item == "deed":
             json_data["users"][user]["farm_size"] += random.randint(5, 9)
-        elif item == "classic box" or item == "farmer box":
+        elif item in boxes:
             items_got = []
             message = "You got :\n"
             for i in range(5):
-                if item == "farmer box": items_got.append(random.choice(farmer_box_items))
-                else: items_got.append(random.choice(classic_box_items))
+                items_got.append(random.choice(boxes[item]))
             for i in items_got:
                 amount = random.randint(1, 3)
                 add_items(user, i, amount)
@@ -1237,3 +1278,35 @@ Id : {id}
      defence by {d["xp"]//(100+d["level"]*100)} with
      /pets_upgrade
 """
+
+
+# TODO: Add petfight
+
+def do_explore(user):
+    if not user in json_data["users"]:
+        create_user(user)
+    train_ticket = has_item(user, "train ticket", 1)
+    car = has_item(user, "car", 1)
+    flying_carpet = has_item(user, "flying carpet", 1)
+    if not (train_ticket or car or flying_carpet):
+        return "You need to buy a train ticket, a car or a flying carpet ..."
+    proba = json_data["users"][user]["probas"]["explore"]
+    items = ""
+    for k, i in proba.items():
+        r = random.randint(0, 100)
+        if r < i:
+            add_items(user, k, 1)
+            items += f"- {k} x{1}\n"
+    if items == "":
+        items = "Nothing."
+    if train_ticket and not (car or flying_carpet):
+        del_items(user, "train ticket", 1)
+    if car and random.randint(1, 10000) == 1:
+        items += "But you broke your car !"
+        del_items(user, "car", 1)
+    elif flying_carpet and random.randint(1, 100000) == 1:
+        items += "But you broke your flying carpet !"
+        del_items(user, "flying carpet", 1)
+    save_db()
+    return f"""##### YOU FOUND #####
+{items}"""

@@ -780,4 +780,21 @@ async def pets_upgrade(ctx: interactions.SlashContext, id: str, category: str, a
         cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
     else: await ctx.send(f"```{out}```")
 
+##################### EXPLORING #####################
+
+@slash_command(
+    name="explore",
+    description="Go on a trip to get some items."
+)
+
+async def explore(ctx: interactions.SlashContext):
+    user = f"{ctx.user.id}"
+    out = do_explore(user)
+    # Displaying
+    if len(out) > LIMIT:
+        ntext, n = dtext(out, 0)
+        message = await ctx.send(f"```{ntext}```", components = [rightb])
+        cmd_data[f"{message.id}"] = [0, ceil(len(out)/LIMIT), out]
+    else: await ctx.send(f"```{out}```")
+
 bot.start()
